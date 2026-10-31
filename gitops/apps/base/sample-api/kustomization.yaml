@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: sample-api
+# Selectors are explicit in the manifests: includeSelectors would also rewrite NetworkPolicy peer
+# selectors (e.g. the kube-dns allow rule).
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: platform-samples
+    includeTemplates: true
+resources:
+  - namespace.yaml
+  - serviceaccount.yaml
+  - deployment.yaml
+  - service.yaml
+  - autoscaling.yaml
+  - network-policies.yaml

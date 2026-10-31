@@ -1,0 +1,37 @@
+name: gitops
+
+# Manifest check only. Flux applies these files after the cluster exists; this workflow
+# does not plan or apply Azure. It runs when the manifests or this check change.
+
+on:
+  pull_request:
+    paths:
+      - gitops/**
+      - scripts/check-gitops.sh
+      - .github/workflows/gitops.yml
+  push:
+    branches: [main]
+    paths:
+      - gitops/**
+      - scripts/check-gitops.sh
+      - .github/workflows/gitops.yml
+
+permissions:
+  contents: read
+
+jobs:
+  manifests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install kustomize and kubeconform
+        run: |
+          curl -fsSL -o kustomize.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v5.8.3/kustomize_v5.8.3_linux_amd64.tar.gz
+          echo "cb9e31198d3f63b44848bd0afc4c8efc56e6cfef9c93a4a39a211940e6decd61  kustomize.tar.gz" | sha256sum -c
+          tar -xzf kustomize.tar.gz kustomize
+          curl -fsSL -o kubeconform.tar.gz https://github.com/yannh/kubeconform/releases/download/v0.8.0/kubeconform-linux-amd64.tar.gz
+          echo "9bc2bffbf71f261128533edaf912153948b7ff238f9a531ae6d34466ec287883  kubeconform.tar.gz" | sha256sum -c
+          tar -xzf kubeconform.tar.gz kubeconform
+          sudo mv kustomize kubeconform /usr/local/bin
+      - name: Build and validate GitOps manifests
+        run: scripts/check-gitops.sh

@@ -1,0 +1,90 @@
+name: terraform
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: validate (${{ matrix.terraform }}, ${{ matrix.dir }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # required_version is >= 1.11. 1.11.0 is the floor; latest checks that the constraint
+        # still holds on the current CLI. ~1.11 would only ever install 1.11.x.
+        terraform: ["1.11.0", "latest"]
+        dir:
+          - modules/hub-network
+          - modules/network
+          - modules/aks
+          - modules/container-registry
+          - modules/key-vault
+          - modules/postgresql-flexible-server
+          - modules/storage-backend
+          - modules/storage-backend/examples/bootstrap
+          - modules/entra-app-registration
+          - modules/alerting
+          - modules/keycloak/clients
+          - modules/keycloak/roles
+          - modules/keycloak/groups
+          - modules/keycloak/identity-providers/google
+          - modules/keycloak/identity-providers/microsoft
+          - modules/keycloak/identity-providers/oidc
+          - modules/keycloak/examples/complete
+          - environments/dev
+          - environments/prod
+          - bootstrap/github-actions-identity
+    defaults:
+      run:
+        working-directory: ${{ matrix.dir }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: ${{ matrix.terraform }}
+      - run: terraform fmt -check -recursive
+      - run: terraform init -backend=false -input=false
+      - run: terraform validate
+      - name: terraform test (mocked providers)
+        run: |
+          if [ -d tests ]; then terraform test; fi
+      - name: tflint
+        uses: terraform-linters/setup-tflint@6ffdbaa3be476b3431f7275c26966ef32ff60337 # v6.3.2
+        with:
+          tflint_version: v0.60.0
+      - run: tflint --init --config "${{ github.workspace }}/.tflint.hcl"
+      - run: tflint --config "${{ github.workspace }}/.tflint.hcl" --minimum-failure-severity=warning
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install terraform-docs
+        run: |
+          curl -fsSL -o terraform-docs.tar.gz https://github.com/terraform-docs/terraform-docs/releases/download/v0.21.0/terraform-docs-v0.21.0-linux-amd64.tar.gz
+          echo "2fdd81b8d21ff1498cd559af0dcc5d155835f84600db06d3923e217124fc735a  terraform-docs.tar.gz" | sha256sum -c
+          tar -xzf terraform-docs.tar.gz terraform-docs
+          sudo mv terraform-docs /usr/local/bin
+      - name: Check generated module references
+        run: |
+          grep -rl --include=README.md --exclude-dir=.terraform BEGIN_TF_DOCS modules | sort | while IFS= read -r readme; do
+            terraform-docs -c .terraform-docs.yml --output-check "$(dirname "$readme")"
+          done
+
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: config
+          scan-ref: .
+          severity: MEDIUM,HIGH,CRITICAL
+          exit-code: "1"
+          trivyignores: .trivyignore
+      - uses: rhysd/actionlint@914e7df21a07ef503a81201c76d2b11c789d3fca # v1.7.12

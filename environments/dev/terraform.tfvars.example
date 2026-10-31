@@ -1,0 +1,23 @@
+# Verified 2026-10-23 in North Europe: apply, kubectl, and destroy.
+# Both node pools are Standard_D2s_v3, Managed disk, Regular (on-demand) in main.tf.
+
+workload       = "platform"
+environment    = "dev"
+location       = "northeurope" # "westeurope"
+location_short = "neu"         # "weu"
+
+kubernetes_version = "1.36"
+
+# Default in variables.tf is ["1", "2", "3"]. This region and SKU were verified on zone 2 only.
+node_availability_zones = ["2"]
+
+aks_admin_group_object_ids      = ["00000000-0000-0000-0000-000000000000"]
+api_server_authorized_ip_ranges = ["20.0.11.10/32"] # replace with your public IPv4/32
+
+# Omit or set false for AKS-only dev (no database cost). Requires postgres_admin_group when true.
+postgres_enabled = false
+
+# postgres_admin_group = {
+#   object_id    = "00000000-0000-0000-0000-000000000000"
+#   display_name = "sg-platform-postgres-admins"
+# }

@@ -1,0 +1,20 @@
+# Findings reviewed and accepted. Each is driven by an input that the caller sets per environment.
+
+# AKS public API server: restricted via api_server_authorized_ip_ranges or private_cluster.
+# The module emits a `check` warning when neither is set; environments/dev sets authorized ranges.
+AZU-0041
+AZU-0065
+
+# Customer-managed keys are an opt-in compliance requirement, not a baseline. Platform-managed
+# keys plus infrastructure (double) encryption are used by default.
+AZU-0060
+
+# State account logging is done through Azure Monitor diagnostic settings (log_analytics_workspace
+# input), not classic Storage Analytics logging, which this check looks for.
+AZU-0057
+
+# Connection throttling targets password brute-force; the server is private and Entra-only by default.
+AZU-0021
+
+# environments/dev opens 80/443 on the node subnet for Service LB ingress; prod uses a private cluster.
+AZU-0047

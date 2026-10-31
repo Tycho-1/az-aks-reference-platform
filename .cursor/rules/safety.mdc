@@ -1,0 +1,11 @@
+---
+description: Safety boundaries for agents working on this infrastructure repo
+alwaysApply: true
+---
+
+# Safety
+
+- Never run `terraform apply`, `destroy`, `import`, `state *`, `force-unlock`, or `az` commands that create, change or delete resources.
+- Never commit or print `*.tfvars`, `backend.hcl`, state files, or secrets; only `*.example` files are tracked.
+- Verification is plan-only: `scripts/check.sh`.
+- Repo conventions are in `AGENTS.md`; read it before larger changes.

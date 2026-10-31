@@ -1,0 +1,15 @@
+formatter: markdown table
+
+output:
+  file: README.md
+  mode: inject
+
+settings:
+  anchor: false
+  html: false
+
+# Hand-written READMEs keep the narrative; this fills in the reference tables.
+sections:
+  show:
+    - inputs
+    - outputs

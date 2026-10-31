@@ -1,0 +1,99 @@
+################################################################################
+# Copy to terraform.tfvars (not committed).
+#
+# Active values are the North Europe smoke test applied and destroyed on
+# 2026-10-30: private hub/spoke, non-zonal firewall (zones = [] in network.tf),
+# Bastion, small Spot apps pool, PostgreSQL off, Flux off, no budget alert.
+# variables.tf still defaults to the larger West Europe layout. Those values
+# are commented below each setting.
+#
+# Replace the two placeholders before apply:
+#   aks_admin_group_object_ids  — an Entra group you belong to
+#   operator_ip_ranges          — your current public IPv4 as a /32
+################################################################################
+
+# --- Core naming & regions ---
+
+workload        = "platform"
+location        = "northeurope"
+location_short  = "neu"
+paired_location = "westeurope"
+owner           = "platform-team"
+
+# West Europe production layout:
+# location        = "westeurope"
+# location_short  = "weu"
+# paired_location = "northeurope"
+
+# --- Network (defaults in variables.tf; override only if you need non-overlapping space) ---
+
+# hub_address_space  = "10.0.0.0/22"
+# spoke_address_space = "10.10.0.0/16"
+
+# Laptop kubectl into the private API. Off in the smoke test: VpnGw1 bills hourly, and the
+# tunnel does not resolve privatelink.<region>.azmk8s.io.
+# vpn_gateway_enabled = true
+
+# --- AKS ---
+
+kubernetes_version = "1.36"
+# kubernetes_version = "1.37"
+
+# North Europe smoke test used one zone. The variable default is ["1", "2", "3"].
+node_availability_zones = ["2"]
+
+# Placeholder. Not the group used in the smoke test.
+aks_admin_group_object_ids = ["00000000-0000-0000-0000-000000000000"]
+
+# Requires EncryptionAtHost on the subscription when true.
+host_encryption_enabled = false
+
+# D2s_v3 has no temp disk, so the OS disk is Managed. The system pool stays Regular.
+# Production defaults: Standard_D4ds_v5, Ephemeral, system min 3, apps min 3 max 10 Regular.
+system_node_pool_vm_size      = "Standard_D2s_v3"
+system_node_pool_min_count    = 1
+system_node_pool_os_disk_type = "Managed"
+apps_node_pool_vm_size        = "Standard_D2s_v3"
+apps_node_pool_min_count      = 1
+apps_node_pool_max_count      = 2
+apps_node_pool_os_disk_type   = "Managed"
+apps_node_pool_priority       = "Spot"
+
+# --- PostgreSQL (data tier) ---
+
+# false skips the Flexible Server and the paired-region Key Vault.
+postgres_enabled = false
+
+# Required only when postgres_enabled = true.
+# postgres_admin_group = {
+#   object_id    = "00000000-0000-0000-0000-000000000000"
+#   display_name = "sg-platform-postgres-admins"
+# }
+
+# --- GitOps (Flux) ---
+
+# null skips the Flux extension. Set an HTTPS URL of this repo to turn it on.
+gitops_repository_url = null
+# gitops_repository_url = "https://github.com/example-org/az-aks-reference-platform"
+
+# --- Registry & Terraform runner access ---
+
+# Public IPs of GitHub-hosted runners that push images. Empty keeps the registry private-only.
+acr_allowed_ip_ranges = []
+
+# Documentation address. Replace with your public IPv4 /32 so Terraform can create Key Vault keys.
+# Empty when Terraform runs from a self-hosted runner in the spoke.
+operator_ip_ranges = ["203.0.113.10/32"]
+
+# --- Alerting & cost ---
+
+alert_email_receivers = {
+  platform-oncall = "platform-oncall@example.com"
+}
+
+# null skips the subscription budget alert.
+monthly_budget = null
+# monthly_budget = {
+#   amount     = 3000
+#   start_date = "2026-10-01T00:00:00Z"
+# }

@@ -1,0 +1,71 @@
+# Default deny, then allow only what the API needs. Enforced by Cilium; egress to the internet
+# is additionally filtered by Azure Firewall.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+spec:
+  podSelector: {}
+  policyTypes: ["Ingress", "Egress"]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+spec:
+  podSelector: {}
+  policyTypes: ["Egress"]
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: sample-api
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: sample-api
+  policyTypes: ["Ingress", "Egress"]
+  ingress:
+    # Replace with the ingress controller's namespace when exposing the API.
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: app-routing-system
+      ports:
+        - port: http
+    # Managed Prometheus scrapes from ama-metrics pods in kube-system.
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - port: metrics
+  egress:
+    # PostgreSQL delegated subnet (snet-postgres in environments/prod).
+    - to:
+        - ipBlock:
+            cidr: 10.10.8.0/24
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Entra ID token exchange for workload identity; FQDN filtering happens at the firewall.
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except: ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]
+      ports:
+        - protocol: TCP
+          port: 443

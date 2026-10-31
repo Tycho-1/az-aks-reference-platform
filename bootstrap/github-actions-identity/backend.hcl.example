@@ -1,0 +1,5 @@
+resource_group_name  = "rg-tfstate-mgmt-weu"
+storage_account_name = "sttfstateplatform001"
+container_name       = "platform-prod"
+key                  = "github-actions-identity.tfstate"
+use_azuread_auth     = true

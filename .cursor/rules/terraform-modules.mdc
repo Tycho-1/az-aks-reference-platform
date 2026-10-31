@@ -1,0 +1,28 @@
+---
+description: Conventions for reusable Terraform modules and root examples in this repo
+globs: modules/**/*.tf,environments/**/*.tf,bootstrap/**/*.tf
+alwaysApply: false
+---
+
+# Terraform module conventions
+
+- No `provider` or `backend` blocks in `modules/`; only `environments/*` and `bootstrap/*` configure them.
+- `versions.tf` pins `required_version = ">= 1.11"` and `azurerm = ">= 5.0, < 6.0"`.
+- `count` / `for_each` must be decidable at plan time:
+
+```hcl
+# ❌ BAD: the ID may be unknown until apply, so plan fails with "Invalid count argument"
+count = var.private_dns_zone.id == null ? 1 : 0
+count = try(var.cmk.geo_backup, null) != null ? 1 : 0
+
+# ✅ GOOD: presence of a caller-supplied object or map is always known
+count = var.log_analytics != null ? 1 : 0
+count = var.cmk == null ? 0 : (var.cmk.geo_backup != null ? 1 : 0)
+```
+
+- Optional features are nullable objects (`default = null`) with `optional()` attributes.
+- Validate single inputs with `validation`; cross-input rules with `lifecycle.precondition`.
+- A resource that needs RBAC at creation time goes: role assignment → `time_sleep` 60s → resource with `depends_on`.
+- Outputs that consumers wait on (e.g. `subnet_ids`) declare `depends_on` on associations.
+- Secure defaults: public access off, local/shared-key auth off, diagnostics to Dedicated tables.
+- After changing inputs, update the module `README.md` inputs table.

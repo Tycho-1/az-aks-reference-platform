@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../base/sample-api
+
+# Replace crplatformprodweuxxxx.azurecr.io with `terraform output -raw acr_login_server` from environments/prod.
+# Import the image first:
+#   az acr import -n <acr-name> --source ghcr.io/stefanprodan/podinfo:6.7.1 --image podinfo:6.7.1
+images:
+  - name: crplatformprodweuxxxx.azurecr.io/podinfo
+    newName: crplatformprodweuxxxx.azurecr.io/podinfo
+    newTag: 6.7.1
+
+patches:
+  # Values from `terraform output sample_api_workload_identity` in environments/prod.
+  - target:
+      kind: ServiceAccount
+      name: sample-api
+    patch: |-
+      - op: replace
+        path: /metadata/annotations/azure.workload.identity~1client-id
+        value: 00000000-0000-0000-0000-000000000000
+  - target:
+      kind: ConfigMap
+      name: sample-api
+    patch: |-
+      - op: replace
+        path: /data/PGHOST
+        value: psql-platform-prod-weu.postgres.database.azure.com

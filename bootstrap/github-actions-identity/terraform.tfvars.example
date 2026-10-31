@@ -1,0 +1,3 @@
+github_repository        = "example-org/az-aks-reference-platform"
+state_storage_account_id = "/subscriptions/<subscription-id>/resourceGroups/rg-tfstate-mgmt-weu/providers/Microsoft.Storage/storageAccounts/sttfstateplatform001"
+state_container_name     = "platform-prod"

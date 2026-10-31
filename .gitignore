@@ -1,0 +1,21 @@
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+.terraform.tfstate.lock.info
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+backend.hcl
+.terraformrc
+terraform.rc
+
+# Local AI tooling (kept out of the published repo; AGENTS.md, CLAUDE.md and .cursor/ are the shared config)
+.claude/

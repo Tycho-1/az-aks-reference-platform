@@ -1,0 +1,15 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "labels": ["dependencies"],
+  "terraform": {
+    "enabled": true
+  },
+  "packageRules": [
+    {
+      "description": "One pull request per provider bump, across all modules.",
+      "matchManagers": ["terraform"],
+      "groupName": "terraform providers"
+    }
+  ]
+}

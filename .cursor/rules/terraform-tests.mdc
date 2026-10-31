@@ -1,0 +1,30 @@
+---
+description: How to write terraform test files with mocked providers in this repo
+globs: **/*.tftest.hcl
+alwaysApply: false
+---
+
+# Terraform tests
+
+- Tests live in `<module>/tests/<module>.tftest.hcl` and only use `command = plan`.
+- Mock every provider the module uses (`azurerm`, `time`, `random`, `azuread`).
+- `azurerm_client_config` must return UUIDs, or resources that validate IDs fail:
+
+```hcl
+mock_provider "azurerm" {
+  mock_data "azurerm_client_config" {
+    defaults = {
+      tenant_id = "00000000-0000-0000-0000-000000000001"
+      object_id = "00000000-0000-0000-0000-000000000002"
+    }
+  }
+}
+```
+
+- Use realistic ARM IDs for inputs such as subnet and zone IDs, because modules parse them with regex.
+- Each module has:
+  - one `run` asserting the secure defaults (public access, auth mode, zones, locks)
+  - one `run` per feature toggle asserting its wiring (e.g. CMK role + encryption block)
+  - negative `run`s with `expect_failures = [var.x]` or `[resource.address]` for validations and preconditions
+- Assert on configuration values known at plan time, not on computed attributes.
+- Run with `terraform init -backend=false && terraform test` or `scripts/check.sh <dir>`.
