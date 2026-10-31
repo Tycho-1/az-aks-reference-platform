@@ -76,13 +76,15 @@ variable "bastion" {
   })
   default = null
 
+  # Ternary, not ||. Terraform evaluates both sides of ||, so a null object still
+  # reads .sku and the validation fails on the default.
   validation {
-    condition     = var.bastion == null || contains(["Basic", "Standard", "Premium"], var.bastion.sku)
+    condition     = var.bastion == null ? true : contains(["Basic", "Standard", "Premium"], var.bastion.sku)
     error_message = "bastion.sku must be Basic, Standard or Premium."
   }
 
   validation {
-    condition = var.bastion == null || (
+    condition = var.bastion == null ? true : (
       can(cidrhost(var.bastion.subnet_address_prefix, 0)) && tonumber(split("/", var.bastion.subnet_address_prefix)[1]) <= 26
     )
     error_message = "bastion.subnet_address_prefix must be a valid CIDR of /26 or larger."
@@ -116,7 +118,7 @@ variable "vpn_gateway" {
   default = null
 
   validation {
-    condition = var.vpn_gateway == null || contains(
+    condition = var.vpn_gateway == null ? true : contains(
       ["VpnGw1", "VpnGw2", "VpnGw3", "VpnGw1AZ", "VpnGw2AZ", "VpnGw3AZ"],
       var.vpn_gateway.sku,
     )
@@ -124,12 +126,12 @@ variable "vpn_gateway" {
   }
 
   validation {
-    condition     = var.vpn_gateway == null || contains(["Generation1", "Generation2"], var.vpn_gateway.generation)
+    condition     = var.vpn_gateway == null ? true : contains(["Generation1", "Generation2"], var.vpn_gateway.generation)
     error_message = "vpn_gateway.generation must be Generation1 or Generation2."
   }
 
   validation {
-    condition = var.vpn_gateway == null || (
+    condition = var.vpn_gateway == null ? true : (
       can(cidrhost(var.vpn_gateway.subnet_address_prefix, 0)) &&
       tonumber(split("/", var.vpn_gateway.subnet_address_prefix)[1]) <= 27
     )
@@ -137,7 +139,7 @@ variable "vpn_gateway" {
   }
 
   validation {
-    condition = var.vpn_gateway == null || (
+    condition = var.vpn_gateway == null ? true : (
       length(var.vpn_gateway.client_address_space) > 0 &&
       alltrue([for cidr in var.vpn_gateway.client_address_space : can(cidrhost(cidr, 0))])
     )
@@ -145,12 +147,12 @@ variable "vpn_gateway" {
   }
 
   validation {
-    condition     = var.vpn_gateway == null || can(regex("^[0-9a-fA-F-]{36}$", var.vpn_gateway.tenant_id))
+    condition     = var.vpn_gateway == null ? true : can(regex("^[0-9a-fA-F-]{36}$", var.vpn_gateway.tenant_id))
     error_message = "vpn_gateway.tenant_id must be an Entra tenant GUID."
   }
 
   validation {
-    condition = var.vpn_gateway == null || (
+    condition = var.vpn_gateway == null ? true : (
       endswith(var.vpn_gateway.sku, "AZ") == (length(var.vpn_gateway.zones) > 0)
     )
     error_message = "AZ VPN SKUs require zones. Non-AZ SKUs must leave zones empty."
