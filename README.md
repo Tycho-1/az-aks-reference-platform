@@ -226,8 +226,11 @@ ends. The production plan and apply workflow is pinned to `1.11.0`, the same CLI
 then kubeconform against Kubernetes 1.36 and the Flux CRD schemas. It does not apply Azure.
 
 [`.github/workflows/deploy-production.yml`](.github/workflows/deploy-production.yml) plans on pull
-requests and applies on `main` after a protected environment approves, authenticating with
-OpenID Connect ([ADR 0008](docs/adr/0008-oidc-for-cicd-with-least-privilege.md)).
+requests and applies on `main` after a protected environment approves, using OpenID Connect
+([ADR 0008](docs/adr/0008-oidc-for-cicd-with-least-privilege.md)). Both jobs skip while the
+`AZURE_TENANT_ID` repository variable is empty, and run once
+[`bootstrap/github-actions-identity`](bootstrap/github-actions-identity) is applied and that
+variable is set.
 
 Locally, `pre-commit install` (from [`.pre-commit-config.yaml`](.pre-commit-config.yaml)) runs the
 same checks before each commit, and [Renovate](renovate.json) proposes provider and action updates.

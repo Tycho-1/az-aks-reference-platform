@@ -1,7 +1,9 @@
 # GitHub Actions identities
 
-One-off setup for [`deploy-production.yml`](../../.github/workflows/deploy-production.yml). It
-creates two user-assigned managed identities that GitHub Actions signs in to with
+One-off setup for [`deploy-production.yml`](../../.github/workflows/deploy-production.yml).
+That workflow skips its jobs while `AZURE_TENANT_ID` is empty, and plans on the next run
+once this bootstrap is applied and the variables below are set. It creates two
+user-assigned managed identities that GitHub Actions signs in to with
 [OpenID Connect](https://learn.microsoft.com/azure/developer/github/connect-from-azure-openid-connect),
 so no Azure credentials are stored in GitHub.
 

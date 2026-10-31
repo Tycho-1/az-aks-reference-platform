@@ -3,6 +3,11 @@ name: deploy-production
 # Plan on every PR and push to main; apply the reviewed plan on main after environment approval.
 # Authentication is OpenID Connect to user-assigned managed identities (bootstrap/github-actions-identity):
 # no Azure secrets are stored in GitHub.
+#
+# Both jobs skip while AZURE_TENANT_ID is empty. Set that variable, plus the other GitHub
+# variables in bootstrap/github-actions-identity/README.md, and the next run plans for real.
+# An empty tenant is the switch; the storage account and client IDs still have to be set
+# or terraform init fails.
 
 on:
   pull_request:
@@ -36,6 +41,8 @@ env:
 
 jobs:
   plan:
+    # Empty until bootstrap/github-actions-identity is applied and AZURE_TENANT_ID is set.
+    if: vars.AZURE_TENANT_ID != ''
     # The Key Vaults and API server are private: use a self-hosted runner inside the network
     # (set the TERRAFORM_RUNNER variable) for real deployments.
     runs-on: ${{ vars.TERRAFORM_RUNNER || 'ubuntu-latest' }}
@@ -115,7 +122,7 @@ jobs:
 
   apply:
     needs: plan
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && needs.plan.outputs.has_changes == 'true'
+    if: vars.AZURE_TENANT_ID != '' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && needs.plan.outputs.has_changes == 'true'
     runs-on: ${{ vars.TERRAFORM_RUNNER || 'ubuntu-latest' }}
     # Protect this environment with required reviewers and a main-only deployment branch rule.
     environment: production
