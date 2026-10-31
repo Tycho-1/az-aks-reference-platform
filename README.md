@@ -1,6 +1,6 @@
 # Azure AKS reference platform
 
-[![Terraform](https://img.shields.io/badge/Terraform-%3E%3D1.11-844FBA?logo=terraform&logoColor=white)](https://developer.hashicorp.com/terraform/language)
+[![Terraform](https://img.shields.io/badge/Terraform-%3E%3D1.11.1-844FBA?logo=terraform&logoColor=white)](https://developer.hashicorp.com/terraform/language)
 [![azurerm](https://img.shields.io/badge/azurerm-5.x-0089D6?logo=microsoftazure&logoColor=white)](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -173,7 +173,7 @@ Operational procedures are not written yet; [docs/runbooks](docs/runbooks) lists
 
 ## Getting started
 
-Prerequisites: Terraform ≥ 1.11, Azure CLI, and permissions to create role assignments (Owner or
+Prerequisites: Terraform ≥ 1.11.1, Azure CLI, and permissions to create role assignments (Owner or
 User Access Administrator on the target scope).
 
 ```sh
@@ -210,8 +210,9 @@ Considerations for the production example:
 ## Quality gates
 
 Every module and example is checked in CI ([`.github/workflows/terraform.yml`](.github/workflows/terraform.yml))
-on Terraform `1.11.0` and on the latest release, so the `>= 1.11` constraint is tested at both
-ends. The production plan and apply workflow is pinned to `1.11.0`, the same CLI as the minimum check.
+on Terraform `1.11.1` and on the latest release, so the `>= 1.11.1` constraint is tested at both
+ends. The production plan and apply workflow is pinned to `1.11.1`, the same CLI as the minimum check.
+`1.11.0` is excluded: it cannot encode a sensitive write-only attribute such as `administrator_password_wo`.
 
 - `terraform fmt`, `terraform validate` and `tflint` (with the Azure ruleset)
 - `terraform test` with mocked providers. These plan every module and example without

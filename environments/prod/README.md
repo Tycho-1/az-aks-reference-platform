@@ -136,7 +136,7 @@ for every hour it exists.
 
 ## Deploy
 
-Prerequisites: Terraform ≥ 1.11, Azure CLI, an Entra group you belong to, and permission to
+Prerequisites: Terraform ≥ 1.11.1, Azure CLI, an Entra group you belong to, and permission to
 create resources and role assignments. Remote state comes from
 [`modules/storage-backend/examples/bootstrap`](../../modules/storage-backend/examples/bootstrap).
 For a local-state trial, `terraform init -backend=false` instead of the backend config below.

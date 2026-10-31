@@ -1,6 +1,7 @@
 terraform {
-  # Write-only arguments and ephemeral variables need Terraform 1.11+.
-  required_version = ">= 1.11"
+  # Write-only arguments need Terraform 1.11. 1.11.0 cannot encode a sensitive
+  # write-only value such as administrator_password_wo (fixed in 1.11.1).
+  required_version = ">= 1.11.1"
 
   required_providers {
     azurerm = {

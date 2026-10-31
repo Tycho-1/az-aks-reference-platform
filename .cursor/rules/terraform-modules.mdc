@@ -7,7 +7,7 @@ alwaysApply: false
 # Terraform module conventions
 
 - No `provider` or `backend` blocks in `modules/`; only `environments/*` and `bootstrap/*` configure them.
-- `versions.tf` pins `required_version = ">= 1.11"` and `azurerm = ">= 5.0, < 6.0"`.
+- `versions.tf` pins `required_version = ">= 1.11.1"` and `azurerm = ">= 5.0, < 6.0"`.
 - `count` / `for_each` must be decidable at plan time:
 
 ```hcl

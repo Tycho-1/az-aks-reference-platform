@@ -2,7 +2,7 @@
 # optionally migrate this stack's own state into the account (`terraform init -migrate-state`).
 
 terraform {
-  required_version = ">= 1.11"
+  required_version = ">= 1.11.1"
 
   required_providers {
     azurerm = {

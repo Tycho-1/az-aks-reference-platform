@@ -42,7 +42,7 @@ in this same root turns on production-like sizing inside the simple topology (us
 
 ## Deploy
 
-Prerequisites: Terraform ≥ 1.11, Azure CLI, remote state from
+Prerequisites: Terraform ≥ 1.11.1, Azure CLI, remote state from
 [`modules/storage-backend/examples/bootstrap`](../../modules/storage-backend/examples/bootstrap),
 and permission to assign roles on the subscription.
 

@@ -15,9 +15,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # required_version is >= 1.11. 1.11.0 is the floor; latest checks that the constraint
-        # still holds on the current CLI. ~1.11 would only ever install 1.11.x.
-        terraform: ["1.11.0", "latest"]
+        # required_version is >= 1.11.1. 1.11.0 cannot encode sensitive write-only
+        # attributes. latest checks the other end. ~1.11 would only ever install 1.11.x.
+        terraform: ["1.11.1", "latest"]
         dir:
           - modules/hub-network
           - modules/network

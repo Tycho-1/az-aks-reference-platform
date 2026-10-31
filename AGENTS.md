@@ -18,7 +18,7 @@ Firewall, private AKS, ACR, PostgreSQL Flexible Server, Key Vault CMK) plus two 
 
 ## Tooling
 
-- Terraform `>= 1.11`, `azurerm` `>= 5.0, < 6.0`, `azuread` 3.x, `time`, `random`. CI tests `1.11.0` and `latest`; the production plan and apply workflow is pinned to `1.11.0`
+- Terraform `>= 1.11.1`, `azurerm` `>= 5.0, < 6.0`, `azuread` 3.x, `time`, `random`. CI tests `1.11.1` and `latest`; the production plan and apply workflow is pinned to `1.11.1`. `1.11.0` cannot encode sensitive write-only attributes.
 - Run all quality gates with `scripts/check.sh` (or `scripts/check.sh modules/aks` for one dir).
   It also runs `tflint` and `terraform-docs --output-check` when those tools are installed.
 - `terraform test` uses mocked providers and `command = plan`, so it needs no Azure credentials
